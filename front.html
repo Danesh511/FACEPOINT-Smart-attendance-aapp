@@ -1,0 +1,1002 @@
+<html lang="en" class="scroll-smooth" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>KHAYAL - Smart Attendance System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+      transition: background-color 0.5s ease, color 0.5s ease;
+      color: black;
+      perspective: 1500px;
+      overflow-x: hidden;
+    }
+    /* Custom 3D card shadow */
+    .card-3d {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.1),
+        0 15px 40px rgba(0, 0, 0, 0.15);
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      backface-visibility: hidden;
+      border-radius: 1.5rem;
+      overflow: hidden;
+    }
+    /* Container for flipping */
+    #login-register-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      height: auto;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 600px;
+    }
+    /* Front and back faces */
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      backface-visibility: hidden;
+      border-radius: 1.5rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1),
+        0 10px 20px rgba(0, 0, 0, 0.1), 0 15px 40px rgba(0, 0, 0, 0.15);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+      overflow-y: auto;
+    }
+    /* Flipped state */
+    #login-register-container.flipped {
+      transform: rotateY(180deg);
+    }
+    /* Smooth button hover */
+    .btn-smooth {
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #a0aec0;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    /* Override Tailwind dark mode text colors to black */
+    .dark body,
+    .dark .text-indigo-700,
+    .dark .text-indigo-600,
+    .dark .text-indigo-900,
+    .dark .text-yellow-400,
+    .dark .text-yellow-300 {
+      color: black !important;
+    }
+    /* Override input text color */
+    input,
+    select,
+    textarea {
+      color: black !important;
+    }
+    /* Override placeholder color */
+    ::placeholder {
+      color: #4b5563 !important; /* Tailwind gray-700 */
+      opacity: 1;
+    }
+    
+    /* Camera Video Flip */
+    #camera-stream {
+      transform: scaleX(-1); /* Mirror effect for selfie camera */
+    }
+    
+    /* Location Overlay Style */
+    .cam-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        color: #fbbf24; /* yellow-400 */
+        font-family: monospace;
+        text-shadow: 1px 1px 2px black;
+    }
+  </style>
+</head>
+<body
+  class="bg-gradient-to-br from-indigo-50 via-white to-indigo-100 dark:bg-gray-100 transition-colors duration-700"
+>
+  <!-- Navbar -->
+  <nav
+    class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-md"
+  >
+    <div
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16"
+    >
+      <a class="flex items-center space-x-2" href="#home">
+        <div class="w-10 h-10 rounded-full shadow-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+           K
+        </div>
+        <span
+          class="text-2xl font-extrabold tracking-wide text-indigo-600 select-none"
+          >KHAYAL</span
+        >
+      </a>
+      <ul class="hidden md:flex space-x-8 font-semibold text-black">
+        <li>
+          <a class="hover:text-indigo-600 transition" href="#registration"
+            >Registration</a
+          >
+        </li>
+        <li>
+          <a class="hover:text-indigo-600 transition" href="#dashboard"
+            >Dashboard</a
+          >
+        </li>
+        <li>
+          <button
+            aria-label="Toggle Dark/Light Mode"
+            class="text-xl text-indigo-600 hover:text-indigo-800 transition"
+            id="theme-toggle"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
+        </li>
+      </ul>
+      <button
+        aria-label="Open Menu"
+        class="md:hidden text-indigo-600 hover:text-indigo-800 transition text-2xl"
+        id="mobile-menu-btn"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <div class="hidden md:hidden bg-white shadow-inner" id="mobile-menu">
+      <ul class="flex flex-col space-y-3 p-4 font-semibold text-black">
+        <li>
+          <a class="block hover:text-indigo-600 transition" href="#registration"
+            >Registration</a
+          >
+        </li>
+        <li>
+          <a class="block hover:text-indigo-600 transition" href="#dashboard"
+            >Dashboard</a
+          >
+        </li>
+        <li>
+          <button
+            aria-label="Toggle Dark/Light Mode"
+            class="w-full text-left text-indigo-600 hover:text-indigo-800 transition text-xl"
+            id="mobile-theme-toggle"
+          >
+            <i class="fas fa-moon"></i> Toggle Theme
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section
+    class="pt-24 pb-16 bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-600 relative overflow-hidden"
+    id="home"
+  >
+    <div
+      class="max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 flex flex-col-reverse md:flex-row items-center justify-between gap-12"
+    >
+      <div class="max-w-xl text-white drop-shadow-lg z-10">
+        <h1
+          class="text-4xl sm:text-5xl font-extrabold leading-tight tracking-wide mb-4"
+        >
+          KHAYAL
+          <span class="text-yellow-300">Smart</span> Attendance
+        </h1>
+        <p class="text-lg sm:text-xl font-light mb-8">
+          The future of student attendance. Geo-tagged Face Recognition for secure, automated attendance marking. 🎓📍📸
+        </p>
+        <button
+          id="open-login-register"
+          class="inline-flex items-center space-x-3 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-semibold rounded-lg px-6 py-3 shadow-lg btn-smooth transition"
+        >
+          <i class="fas fa-user"></i>
+          <span>Student Login 🚀</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Login/Register Flip Container -->
+  <section class="py-20 bg-gradient-to-tr from-indigo-50 via-white to-indigo-100" id="login-register" style="display:none;">
+    <div class="max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 flex justify-center">
+      <div id="login-register-container" aria-live="polite" aria-atomic="true">
+        <!-- Login Card Front -->
+        <div class="card-3d card-front">
+          <h2 class="text-3xl font-extrabold text-indigo-700 mb-8 text-center">
+            Student Login
+          </h2>
+          <form id="login-form" class="space-y-6" autocomplete="off" novalidate>
+            <div>
+              <label
+                for="login-student-id"
+                class="block mb-2 font-medium text-black"
+                >Mobile Number / Student ID 🆔</label
+              >
+              <input
+                type="text"
+                id="login-student-id"
+                name="login-student-id"
+                placeholder="Enter ID or Mobile"
+                required
+                class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+              />
+            </div>
+            <div>
+              <label
+                for="login-password"
+                class="block mb-2 font-medium text-black"
+                >Password 🔑</label
+              >
+              <input
+                type="password"
+                id="login-password"
+                name="login-password"
+                placeholder="Enter your Password"
+                required
+                class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-semibold rounded-lg py-3 shadow-md btn-smooth transition flex justify-center items-center space-x-3"
+            >
+              <i class="fas fa-unlock-alt"></i>
+              <span>Login 🚪</span>
+            </button>
+          </form>
+          <p class="mt-6 text-center text-gray-700">
+            New here?
+            <button
+              id="flip-to-register"
+              class="text-indigo-600 font-semibold hover:text-indigo-800 focus:outline-none focus:underline"
+              aria-label="Go to registration page"
+            >
+              Create an account
+            </button>
+          </p>
+        </div>
+
+        <!-- Register Card Back -->
+        <div class="card-3d card-back overflow-y-auto">
+          <h2 class="text-3xl font-extrabold text-indigo-700 mb-8 text-center">
+            Student Registration
+          </h2>
+          <form
+            id="registration-form"
+            class="space-y-6"
+            autocomplete="off"
+            novalidate
+            enctype="multipart/form-data"
+          >
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label
+                  for="student-id"
+                  class="block mb-2 font-medium text-black"
+                  >Student ID 🆔</label
+                >
+                <input
+                  type="text"
+                  id="student-id"
+                  name="student-id"
+                  placeholder="Enter your Student ID"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div>
+                <label
+                  for="full-name"
+                  class="block mb-2 font-medium text-black"
+                  >Full Name 🧑‍🎓</label
+                >
+                <input
+                  type="text"
+                  id="full-name"
+                  name="full-name"
+                  placeholder="Your full name"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div>
+                <label
+                  for="phone"
+                  class="block mb-2 font-medium text-black"
+                  >Phone Number 📞</label
+                >
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="+1 234 567 8901"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div>
+                <label
+                  for="class"
+                  class="block mb-2 font-medium text-black"
+                  >Class 📚</label
+                >
+                <input
+                  type="text"
+                  id="class"
+                  name="class"
+                  placeholder="Your class (e.g. FY CSE)"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div>
+                <label
+                  for="batch"
+                  class="block mb-2 font-medium text-black"
+                  >Batch (A/B/C) 🏷️</label
+                >
+                <select
+                  id="batch"
+                  name="batch"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                >
+                  <option value="" disabled selected>Select your batch</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </select>
+              </div>
+               <!-- Roll Number added to registration -->
+               <div>
+                <label
+                  for="roll-no"
+                  class="block mb-2 font-medium text-black"
+                  >Roll Number 🔢</label
+                >
+                <input
+                  type="text"
+                  id="roll-no"
+                  name="roll-no"
+                  placeholder="e.g. 101"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div>
+                <label
+                  for="dob"
+                  class="block mb-2 font-medium text-black"
+                  >Date of Birth 🎂</label
+                >
+                <input
+                  type="date"
+                  id="dob"
+                  name="dob"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div>
+                <label
+                  for="gender"
+                  class="block mb-2 font-medium text-black"
+                  >Gender 🚻</label
+                >
+                <select
+                  id="gender"
+                  name="gender"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                >
+                  <option value="" disabled selected>Select your gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="password"
+                  class="block mb-2 font-medium text-black"
+                  >Password 🔐</label
+                >
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Create a password"
+                  required
+                  aria-describedby="passwordHelp"
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="confirm-password"
+                  class="block mb-2 font-medium text-black"
+                  >Confirm Password 🔄</label
+                >
+                <input
+                  type="password"
+                  id="confirm-password"
+                  name="confirm-password"
+                  placeholder="Confirm your password"
+                  required
+                  class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  for="profile-pic"
+                  class="block mb-2 font-medium text-black"
+                  >Profile Picture (For Face Rec) 📷</label
+                >
+                <input
+                  type="file"
+                  id="profile-pic"
+                  name="profile-pic"
+                  accept="image/*"
+                  class="w-full rounded-lg border border-gray-400 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                />
+              </div>
+            </div>
+            <div class="flex justify-center mt-6">
+              <button
+                type="submit"
+                class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-semibold rounded-lg py-3 px-10 shadow-md btn-smooth transition flex items-center space-x-3"
+              >
+                <i class="fas fa-user-plus text-xl"></i>
+                <span>Create Account 🎉</span>
+              </button>
+            </div>
+          </form>
+          <p class="mt-6 text-center text-gray-700">
+            Already have an account?
+            <button
+              id="flip-to-login"
+              class="text-indigo-600 font-semibold hover:text-indigo-800 focus:outline-none focus:underline"
+              aria-label="Go to login page"
+            >
+              Login here
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Student Dashboard Section (hidden initially) -->
+  <section
+    id="student-dashboard-section"
+    class="py-20 bg-gradient-to-tr from-indigo-50 via-white to-indigo-100 hidden"
+  >
+    <div class="max-w-7xl mx-auto px-6 sm:px-12 lg:px-16">
+      <h2
+        class="text-3xl font-extrabold text-black mb-12 text-center drop-shadow-md"
+      >
+        Student Dashboard
+      </h2>
+      <div class="flex flex-col md:flex-row md:space-x-10">
+        <!-- Side Menu -->
+        <nav
+          class="bg-white rounded-3xl p-6 shadow-xl card-3d w-full md:w-64 mb-10 md:mb-0 sticky top-24 self-start"
+          aria-label="Student dashboard side menu"
+        >
+          <ul class="space-y-6 font-semibold text-indigo-700">
+            <li>
+              <button
+                id="menu-attendance"
+                class="w-full text-left flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-3 py-2 bg-indigo-100"
+              >
+                <i class="fas fa-map-marker-alt text-indigo-600 text-lg"></i>
+                <span>Mark Attendance</span>
+              </button>
+            </li>
+            <li>
+              <button
+                id="menu-my-attendance"
+                class="w-full text-left flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-100 transition"
+              >
+                 <i class="fas fa-check-circle text-indigo-600 text-lg"></i>
+                <span>My Attendance</span>
+              </button>
+            </li>
+            <li>
+              <button
+                id="menu-report"
+                class="w-full text-left flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-100 transition"
+              >
+                <i class="fas fa-chart-bar text-indigo-600 text-lg"></i>
+                <span>Reports</span>
+              </button>
+            </li>
+            <li>
+              <button
+                id="menu-profile"
+                class="w-full text-left flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-100 transition"
+              >
+                <i class="fas fa-user text-indigo-600 text-lg"></i>
+                <span>My Profile</span>
+              </button>
+            </li>
+            <li>
+              <button
+                id="menu-notifications"
+                class="w-full text-left flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-100 transition"
+              >
+                <i class="fas fa-bell text-indigo-600 text-lg"></i>
+                <span>Notifications</span>
+              </button>
+            </li>
+            <li>
+              <button
+                id="menu-leave"
+                class="w-full text-left flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-100 transition"
+              >
+                <i class="fas fa-file-alt text-indigo-600 text-lg"></i>
+                <span>Request Leave</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="flex-1 space-y-10">
+          <!-- Mark Attendance Section -->
+          <section id="section-attendance" class="">
+            <h3 class="text-2xl font-bold text-indigo-700 mb-6">
+              Mark Attendance 📍📸
+            </h3>
+            <div
+              class="bg-white rounded-3xl p-6 shadow-xl card-3d max-w-4xl mx-auto"
+            >
+              <!-- Initial State (Before Camera Start) -->
+              <div id="camera-prompt" class="text-center py-6">
+                 <div class="mb-6 flex justify-center">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center animate-pulse">
+                        <i class="fas fa-camera text-3xl text-indigo-600"></i>
+                    </div>
+                </div>
+                 <h4 class="text-xl font-bold text-gray-800 mb-2">Unified Geo-Attendance</h4>
+                 <p class="mb-6 text-gray-600">We will verify your location and face simultaneously.</p>
+                 <button
+                  id="start-camera-btn"
+                  class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-semibold rounded-lg py-3 px-8 shadow-md btn-smooth transition inline-flex items-center space-x-2"
+                >
+                  <i class="fas fa-power-off"></i>
+                  <span>Start Verification System</span>
+                </button>
+              </div>
+
+              <!-- Live Camera Feed (Hidden initially) -->
+              <div id="step-face" class="hidden text-center py-6">
+                 <h4 class="text-xl font-bold text-gray-800 mb-4">Position your face & Wait for GPS</h4>
+                 
+                 <div class="relative w-full max-w-sm mx-auto rounded-xl overflow-hidden shadow-2xl bg-black aspect-[3/4] mb-6 border-4 border-indigo-500">
+                    <video id="camera-stream" autoplay playsinline class="w-full h-full object-cover"></video>
+                    
+                    <!-- Location Overlay (Dynamic) -->
+                    <div class="absolute bottom-4 left-4 right-4 cam-overlay p-2 rounded text-xs text-left">
+                        <p><i class="fas fa-map-marker-alt text-yellow-400"></i> <span id="overlay-coords">Locating...</span></p>
+                        <p><i class="fas fa-clock text-yellow-400"></i> <span id="overlay-time">--:--:--</span></p>
+                    </div>
+
+                    <!-- Face Grid Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-48 h-64 border-2 border-yellow-400 rounded-full opacity-50 border-dashed"></div>
+                    </div>
+                 </div>
+
+                 <!-- Hidden Canvas for Capture -->
+                 <canvas id="photo-canvas" class="hidden"></canvas>
+
+                 <button
+                  id="capture-face-btn"
+                  disabled
+                  class="bg-gray-400 text-white font-semibold rounded-lg py-3 px-8 shadow-md btn-smooth transition inline-flex items-center space-x-2 cursor-not-allowed"
+                >
+                  <i class="fas fa-camera"></i>
+                  <span id="capture-btn-text">Waiting for GPS...</span>
+                </button>
+              </div>
+
+              <!-- Step 3: Success -->
+              <div id="step-success" class="hidden text-center py-10">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check text-5xl text-green-600"></i>
+                </div>
+                <h4 class="text-2xl font-bold text-green-700 mb-2">Attendance Marked!</h4>
+                <p class="text-gray-600">Geotagged Photo Captured Successfully.</p>
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg inline-block text-left text-sm text-gray-700">
+                    <p><strong>Date:</strong> <span id="success-date">--</span></p>
+                    <p><strong>Time:</strong> <span id="success-time">--</span></p>
+                    <p><strong>Subject:</strong> Applied Mathematics</p>
+                    <p><strong>GPS:</strong> <span id="success-gps">--</span></p>
+                </div>
+                <div class="mt-8 space-x-4">
+                     <a id="download-link" href="#" download="attendance_proof.png" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow"><i class="fas fa-download"></i> Save Photo</a>
+                     <button onclick="activateSection(1)" class="text-indigo-600 underline hover:text-indigo-800 font-semibold">View History</button>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- My Attendance List -->
+          <section id="section-my-attendance" class="hidden">
+             <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-indigo-700">
+                    My Attendance Record 🧾
+                </h3>
+                <button id="clear-history-btn" class="text-sm text-red-500 hover:text-red-700 underline">Clear History</button>
+             </div>
+             
+            <div class="bg-white rounded-3xl p-6 shadow-xl card-3d max-w-4xl mx-auto">
+                 <div class="overflow-x-auto">
+                  <table class="min-w-full text-left">
+                    <thead>
+                        <tr class="bg-indigo-50 text-indigo-900">
+                            <th class="p-4 rounded-tl-lg">Date/Time</th>
+                            <th class="p-4">Subject</th>
+                            <th class="p-4">Location</th>
+                            <th class="p-4">Proof</th>
+                            <th class="p-4 rounded-tr-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-table-body" class="divide-y divide-gray-100 text-gray-700">
+                        <!-- Dynamic Rows will be inserted here -->
+                        <tr class="bg-gray-50 italic text-gray-500">
+                            <td colspan="5" class="p-4 text-center">No recent attendance marked via app.</td>
+                        </tr>
+                    </tbody>
+                  </table>
+                 </div>
+                 <div class="mt-6 pt-4 border-t border-gray-100">
+                     <h4 class="font-bold text-indigo-900 mb-2">Summary</h4>
+                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                         <div class="bg-indigo-50 p-3 rounded-lg text-center">
+                             <div class="text-xs text-gray-500">Total Classes</div>
+                             <div class="font-bold text-indigo-600 text-xl">45</div>
+                         </div>
+                         <div class="bg-green-50 p-3 rounded-lg text-center">
+                             <div class="text-xs text-gray-500">Present</div>
+                             <div class="font-bold text-green-600 text-xl">38</div>
+                         </div>
+                         <div class="bg-red-50 p-3 rounded-lg text-center">
+                             <div class="text-xs text-gray-500">Absent</div>
+                             <div class="font-bold text-red-600 text-xl">7</div>
+                         </div>
+                         <div class="bg-yellow-50 p-3 rounded-lg text-center">
+                             <div class="text-xs text-gray-500">Percentage</div>
+                             <div class="font-bold text-yellow-600 text-xl">84%</div>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+          </section>
+
+          <!-- Attendance Reports -->
+          <section id="section-report" class="hidden">
+            <h3 class="text-2xl font-bold text-indigo-700 mb-6">
+              Attendance Reports 📊
+            </h3>
+            <div
+              class="bg-white rounded-3xl p-6 shadow-xl card-3d max-w-4xl mx-auto space-y-8"
+            >
+              <!-- Weekly Report -->
+              <div>
+                <h4 class="text-xl font-semibold mb-3">Weekly Status</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                     <div class="bg-green-100 p-4 rounded-xl text-center">
+                        <span class="block text-2xl font-bold text-green-700">85%</span>
+                        <span class="text-sm text-green-800">Average</span>
+                     </div>
+                     <div class="bg-red-100 p-4 rounded-xl text-center">
+                        <span class="block text-2xl font-bold text-red-700">1</span>
+                        <span class="text-sm text-red-800">Critical Subject</span>
+                     </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full border border-gray-300 rounded-lg">
+                    <thead>
+                      <tr class="bg-indigo-100 text-indigo-700 font-semibold">
+                        <th class="border border-gray-300 px-3 py-2">Subject</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center">Mon</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center">Tue</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center">Wed</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center">Thu</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center">Fri</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                      <tr>
+                        <td class="border border-gray-300 px-3 py-2 font-semibold">Mathematics</td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-red-400"><i class="fas fa-times-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                      </tr>
+                       <tr>
+                        <td class="border border-gray-300 px-3 py-2 font-semibold">Physics</td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-green-600"><i class="fas fa-check-circle"></i></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profile Section -->
+          <section id="section-profile" class="hidden">
+            <h3 class="text-2xl font-bold text-indigo-700 mb-6">My Profile 👤</h3>
+            <div
+              class="bg-white rounded-3xl p-10 shadow-xl card-3d max-w-4xl mx-auto"
+            >
+              <form id="profile-form" class="space-y-6" novalidate>
+                <div class="flex flex-col md:flex-row md:space-x-10 items-center md:items-start">
+                  <div class="flex-shrink-0 mb-6 md:mb-0 text-center">
+                    <img
+                      id="profile-pic-preview"
+                      alt="Student Profile"
+                      class="rounded-full shadow-lg w-36 h-36 select-none object-cover mx-auto"
+                      src="https://storage.googleapis.com/a1aa/image/bc129502-06de-4b2a-f2d2-528f2a921682.jpg"
+                    />
+                    <label
+                      for="profile-pic-edit"
+                      class="mt-3 block text-center text-indigo-600 cursor-pointer font-semibold hover:text-indigo-800 transition"
+                      >Change Picture</label
+                    >
+                    <input
+                      type="file"
+                      id="profile-pic-edit"
+                      name="profile-pic-edit"
+                      accept="image/*"
+                      class="hidden"
+                    />
+                     <p class="text-xs text-gray-500 mt-2">Used for Face Verification</p>
+                  </div>
+                  <div class="flex-1 w-full max-w-md space-y-4">
+                    <div>
+                      <label class="block mb-2 font-semibold text-indigo-700">Full Name</label>
+                      <input type="text" id="profile-full-name" name="profile-full-name" class="w-full rounded-lg border border-gray-400 px-4 py-2 focus:ring-2 focus:ring-indigo-500"/>
+                    </div>
+                     <div>
+                      <label class="block mb-2 font-semibold text-indigo-700">Roll Number</label>
+                      <input type="text" id="profile-roll-no" name="profile-roll-no" class="w-full rounded-lg border border-gray-400 px-4 py-2 focus:ring-2 focus:ring-indigo-500 bg-gray-100" readonly/>
+                    </div>
+                    <div>
+                      <label class="block mb-2 font-semibold text-indigo-700">Class & Batch</label>
+                      <div class="flex space-x-4">
+                         <input type="text" id="profile-class" name="profile-class" class="w-1/2 rounded-lg border border-gray-400 px-4 py-2 focus:ring-2 focus:ring-indigo-500"/>
+                         <input type="text" id="profile-batch" name="profile-batch" class="w-1/2 rounded-lg border border-gray-400 px-4 py-2 focus:ring-2 focus:ring-indigo-500"/>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block mb-2 font-semibold text-indigo-700">Phone Number</label>
+                      <input type="tel" id="profile-phone" name="profile-phone" class="w-full rounded-lg border border-gray-400 px-4 py-2 focus:ring-2 focus:ring-indigo-500"/>
+                    </div>
+                     <div>
+                      <label class="block mb-2 font-semibold text-indigo-700">Date of Birth</label>
+                      <input type="date" id="profile-dob" name="profile-dob" class="w-full rounded-lg border border-gray-400 px-4 py-2 focus:ring-2 focus:ring-indigo-500"/>
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-8 py-3 shadow-md btn-smooth transition w-full">Save Changes</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <!-- Notifications Section -->
+          <section id="section-notifications" class="hidden">
+            <h3 class="text-2xl font-bold text-indigo-700 mb-6">
+              Notifications 🔔
+            </h3>
+            <div
+              class="bg-white rounded-3xl p-6 shadow-xl card-3d max-w-4xl mx-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-indigo-100"
+            >
+              <ul class="space-y-6" id="notifications-list">
+                <li
+                  class="p-4 rounded-xl bg-green-50 shadow-sm border border-green-100 flex items-start space-x-4"
+                >
+                   <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0">
+                       <i class="fas fa-check text-green-700"></i>
+                   </div>
+                  <div>
+                    <p class="font-semibold text-green-900">
+                      Attendance Marked
+                    </p>
+                    <p class="text-sm text-green-800">
+                      Successfully marked for Applied Mathematics.
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">Today, 10:05 AM</p>
+                  </div>
+                </li>
+                <li
+                  class="p-4 rounded-xl bg-indigo-50 shadow-sm border border-indigo-100 flex items-start space-x-4"
+                >
+                  <div class="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center flex-shrink-0">
+                       <i class="fas fa-chalkboard-teacher text-indigo-700"></i>
+                   </div>
+                  <div>
+                    <p class="font-semibold text-indigo-700">
+                      New Lecture Scheduled
+                    </p>
+                    <p class="text-sm text-indigo-800">
+                      Extra lecture for Physics on Saturday.
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">Yesterday</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Leave Request Section -->
+          <section id="section-leave" class="hidden">
+            <h3 class="text-2xl font-bold text-indigo-700 mb-6">
+              Request Leave 📝
+            </h3>
+            <form
+              id="leave-request-form"
+              class="bg-white rounded-3xl p-8 shadow-lg card-3d max-w-4xl mx-auto space-y-6"
+              novalidate
+            >
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                  <label
+                    for="leave-subject"
+                    class="block mb-2 font-medium text-black"
+                    >Subject / Class 📚</label
+                  >
+                  <select
+                    id="leave-subject"
+                    name="leave-subject"
+                    class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                  >
+                    <option>All Day</option>
+                    <option>Applied Mathematics</option>
+                    <option>Physics</option>
+                    <option>Computer Networks</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    for="leave-date"
+                    class="block mb-2 font-medium text-black"
+                    >Date 📅</label
+                  >
+                  <input
+                    type="date"
+                    id="leave-date"
+                    name="leave-date"
+                    required
+                    class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black"
+                  />
+                </div>
+                <div class="md:col-span-2">
+                  <label
+                    for="leave-reason"
+                    class="block mb-2 font-medium text-black"
+                    >Reason 📝</label
+                  >
+                  <textarea
+                    id="leave-reason"
+                    name="leave-reason"
+                    rows="4"
+                    placeholder="Enter your reason for leave"
+                    required
+                    class="w-full rounded-lg border border-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition placeholder-black resize-none"
+                  ></textarea>
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-semibold rounded-lg py-3 px-10 shadow-md btn-smooth transition flex items-center space-x-3"
+              >
+                <i class="fas fa-paper-plane text-xl"></i>
+                <span>Submit Leave Request</span>
+              </button>
+              <p
+                id="leave-confirmation"
+                class="mt-4 text-green-600 font-semibold hidden"
+              >
+                Leave request submitted successfully! Status: <span class="text-orange-500 font-bold">Pending</span>
+              </p>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // --- REAL ATTENDANCE LOGIC ---
+    captureBtn.addEventListener("click", async () => {
+        captureBtn.disabled = true;
+        captureBtnText.textContent = "Verifying...";
+        
+        const canvas = document.getElementById("photo-canvas");
+        const context = canvas.getContext("2d");
+        
+        // 1. Capture Frame
+        canvas.width = cameraStream.videoWidth;
+        canvas.height = cameraStream.videoHeight;
+        context.translate(canvas.width, 0);
+        context.scale(-1, 1);
+        context.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
+        
+        // 2. Get Data
+        const dataURL = canvas.toDataURL("image/jpeg");
+        const locStr = currentLocation ? `${currentLocation.lat}, ${currentLocation.lon}` : "Unknown";
+
+        // 3. Send to Python Server
+        try {
+            const response = await fetch("http://127.0.0.1:5000/api/mark_attendance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: dataURL, location: locStr })
+            });
+            const result = await response.json();
+
+            if (result.status === "success") {
+                // Show Success Screen
+                stepFace.classList.add("hidden");
+                stepSuccess.classList.remove("hidden");
+                
+                document.getElementById("success-date").textContent = result.date;
+                document.getElementById("success-time").textContent = result.time;
+                document.getElementById("success-gps").textContent = locStr;
+                
+                // Add to local history table for visual confirmation
+                addAttendanceRecord(result.name, result.date, result.time, locStr, dataURL);
+            } else {
+                alert("⚠️ Recognition Failed: " + result.message);
+                captureBtn.disabled = false;
+                captureBtnText.textContent = "Try Again";
+            }
+        } catch (err) {
+            alert("❌ Server Error. Check console.");
+            console.error(err);
+            captureBtn.disabled = false;
+            captureBtnText.textContent = "Try Again";
+        }
+    });
+  </script>
+</body>
+</html>
